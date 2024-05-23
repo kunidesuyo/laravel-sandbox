@@ -15,15 +15,15 @@ class AwsService {
       'region' => 'ap-northeast-1',
       'version' => '2006-03-01',
       'credentials' => [
-        'key' => config('filesystems.disks.s3.key'),
-        'secret' => config('filesystems.disks.s3.secret'),
+        'key' => config('aws.access_key_id'),
+        'secret' => config('aws.secret_access_key'),
       ],
     ]);
   }
 
   public function listObjects() {
     return $this->S3Client->listObjects([
-      'Bucket' => config('filesystems.disks.s3.bucket'),
+      'Bucket' => config('aws.bucket_name'),
     ]);
   }
 }
