@@ -22,12 +22,23 @@ sail artisan install:api
 
 ## フロントエンドセットアップ
 ### Nuxtをインストール
+```bash {iscopy=true}
+npx nuxi init front
+```
+
+### LaravelのAPIを呼べるか確認
+
+### ログイン画面
+
+### ログイン後の画面
 
 ## Cognito
 ### ユーザプール作成
 - Cognito Identity Providerともいう
 - 一旦AWSマネジメントコンソールで作成
   - できればIaC化したい
+
+### ログインAPI作成
 
 ### 
 

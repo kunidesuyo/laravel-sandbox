@@ -10,11 +10,18 @@ class AwsController extends Controller
     //
     public function test() {
         $awsService = new AwsService();
-        $listObjects = $awsService->listObjects();
-        var_dump($listObjects);
-        return [
+        // $listObjects = $awsService->listObjects();
+        // if($listObjects == null) {
+        //     return [
+        //         'message' => 'test ng'
+        //     ];
+        // } else {
+        //     return [
+        //         'message' => 'test ok',
+        //     ];
+        // }
+        return response()->json([
             'message' => 'test ok',
-            'config' => config('app.name'),
-        ];
+        ]);
     }
 }
