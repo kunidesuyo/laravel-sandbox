@@ -20,10 +20,16 @@ composer require aws/aws-sdk-php
 sail artisan install:api
 ```
 
+## フロントエンドセットアップ
+### Nuxtをインストール
+
+## Cognito
+### ユーザプール作成
+- Cognito Identity Providerともいう
+- 一旦AWSマネジメントコンソールで作成
+  - できればIaC化したい
+
+### 
+
 ## TODO
-- aws sdk 疎通確認
-  - routerに追加
-  - controller定義
-  - serviceクラス定義
-- ユーザプール作成
 - 認証機能作成
