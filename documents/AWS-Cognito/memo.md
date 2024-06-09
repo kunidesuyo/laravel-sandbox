@@ -38,9 +38,22 @@ npx nuxi init front
 - 一旦AWSマネジメントコンソールで作成
   - できればIaC化したい
 
+### サインアップ
+```mermaid
+sequenceDiagram
+  User->>API: username, password
+  API->>Cognito: username, password
+  Cognito->>User: send confirm mail
+  User->>Cognito: confirm
+```
+### ログインの仕組み
+色々な方法があるが、今回は`USER_PASSWORD_AUTH`を用いる
+
 ### ログインAPI作成
 
-### 
+## 参考
+- [AWS BlackBelt Amazon Cognito](https://pages.awscloud.com/rs/112-TZM-766/images/20200630_AWS_BlackBelt_Amazon_Cognito_ver2.pdf)
+
 
 ## TODO
 - 認証機能作成

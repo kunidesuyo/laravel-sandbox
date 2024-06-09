@@ -12,4 +12,5 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('aws')->group(function () {
     Route::get('/test', [AwsController::class, 'test']);
+    Route::post('/signup', [AwsController::class, 'signup']);
 });
