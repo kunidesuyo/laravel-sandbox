@@ -8,5 +8,7 @@ return [
   'bucket_name' => env('AWS_BUCKET'),
   'cognito' => [
     'user_pool_id' => env('AWS_COGNITO_USER_POOL_ID'),
+    'client_id' => env('AWS_COGNITO_CLIENT_ID'),
+    'client_secret' => env('AWS_COGNITO_CLIENT_SECRET'),
   ],
 ];

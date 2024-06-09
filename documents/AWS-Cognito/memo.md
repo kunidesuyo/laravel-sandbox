@@ -38,6 +38,9 @@ npx nuxi init front
 - 一旦AWSマネジメントコンソールで作成
   - できればIaC化したい
 
+#### 設定値
+
+
 ### サインアップ
 ```mermaid
 sequenceDiagram
@@ -46,6 +49,15 @@ sequenceDiagram
   Cognito->>User: send confirm mail
   User->>Cognito: confirm
 ```
+- SecretHash
+  - `username`, `cliend_id`, `client_secret`をsha256でハッシュ化して、base64エンコードしたものを渡す
+- username
+  - これが何かいまいちわからない
+- sub
+  - 勝手に生成されて登録されていた
+- user_id
+  - 勝手に生成されて登録されていた
+
 ### ログインの仕組み
 色々な方法があるが、今回は`USER_PASSWORD_AUTH`を用いる
 

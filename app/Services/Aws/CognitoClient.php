@@ -10,6 +10,7 @@ class CognitoClient
 {
     protected CognitoIdentityProviderClient $client;
     protected $clientId;
+    protected $clientSecret;
     protected $poolId;
 
     public function __construct()
@@ -22,49 +23,41 @@ class CognitoClient
           'secret' => config('aws.secret_access_key'),
         ],
       ]);
+      $this->clientId = config('aws.cognito.client_id');
+      $this->clientSecret = config('aws.cognito.client_secret');
+      $this->poolId = config('aws.cognito.user_pool_id');
     }
 
     public function listUsers()
     {
       $users = $this->client->listUsers([
-        'UserPoolId' => config('aws.cognito.user_pool_id'),
+        'UserPoolId' => $this->poolId,
       ]);
       var_dump($users);
     }
 
     public function signUp($email, $password) {
       try {
-          //CognitoIdentityProviderClientクラスのsignUpメソッド
           $this->client->signUp([
               'ClientId' => $this->clientId,
-              'Password' => $password,
-              // 'UserAttributes' => $username,
+              'SecretHash' => $this->secretHash($email),
               'Username' => $email,
+              'Password' => $password,
+              'UserAttributes' => [
+                [
+                  'Name' => 'email',
+                  'Value' => $email,
+                ],
+              ],
           ]);
-
       } catch (CognitoIdentityProviderException $e) {
           throw $e;
-      }  
+      }
     }
 
-
-
-    // public function register($username, $email, $password)
-    // {
-    //     $attributes['email'] = $email;
-
-    //     try {
-    //         //CognitoIdentityProviderClientクラスのsignUpメソッド
-    //         $this->client->signUp([
-    //             'ClientId' => $this->clientId,
-    //             'Password' => $password,
-    //             // 'UserAttributes' => $username,
-    //             'Username' => $email,
-    //         ]);
-
-    //     } catch (CognitoIdentityProviderException $e) {
-    //         throw $e;
-    //     }
-    //     return;
-    // }
+    private function secretHash($username)
+    {
+      $hash = hash_hmac('sha256', $username . $this->clientId, $this->clientSecret, true);
+      return base64_encode($hash);
+    }
 }
