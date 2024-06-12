@@ -37,6 +37,8 @@ npx nuxi init front
 - Cognito Identity Providerともいう
 - 一旦AWSマネジメントコンソールで作成
   - できればIaC化したい
+- アプリケーションクライアント
+  - `ALLOW_ADMIN_USER_PASSWORD_AUTH`を有効化する
 
 #### 設定値
 
@@ -44,11 +46,55 @@ npx nuxi init front
 ### サインアップ
 ```mermaid
 sequenceDiagram
-  User->>API: username, password
-  API->>Cognito: username, password
-  Cognito->>User: send confirm mail
-  User->>Cognito: confirm
+  User->>API: username
+  API->>Cognito: adminCreateUser(username)
+  Cognito->>User: send email with temporary password
 ```
+### adminCreateUser
+管理者権限でユーザを作成する
+
+- Username(required)
+  - ユーザプールの設定で`UserNameAttributes`に`phone_number`, `email`または`phone_number|email`を設定しているとする(今回はemail)
+  - Usernameにemail形式の文字列を入れるとCognito側で自動で判断して、入力した値をユーザのemail属性に設定して登録してくれる。[参考](https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/user-pool-settings-attributes.html#user-pool-settings-aliases)
+- UserPoolId(required)
+  - ユーザプールIDを渡す
+
+必須項目は上記2つのみ。
+
+ステータスが`FORCE_CHANGE_PASSWORD`のユーザが作成される
+
+一時パスワードがメールで送信される
+
+### adminInitiateAuth
+ユーザ名とパスワードを使用してログインする
+
+- AuthFlow
+  - 用いる認証フローを指定
+  - 今回は`ADMIN_USER_PASSWORD_AUTH`を用いる
+- AuthParameters
+  - AuthFlowで`ADMIN_USER_PASSWORD_AUTH`を指定した場合、以下の情報が必要
+    - USERNAME
+    - PASSWORD
+    - SECRET_HASH
+      - アプリクライアントの設定でクライアントシークレットを指定した場合(?)
+      - 計算方法は[こちら](https://docs.aws.amazon.com/cognito/latest/developerguide/signing-up-users-in-your-app.html#cognito-user-pools-computing-secret-hash)
+
+`adminCreateUser`で作成した、ステータスが`FORCE_CHANGE_PASSWORD`のユーザで、メールで送信された一時パスワードを用いてログインしようとしたら認証エラー
+
+`adminSetUserPassword`でパスワードを変更したユーザ(ステータスが`FORCE_CHANGE_PASSWORD`, `CONFIRMED`どっちも)でログインしたら認証成功
+
+### adminSetUserPassword
+管理者権限でパスワードを設定する
+
+- Permanent
+  - true
+    - パスワードを永続的に設定
+    - ステータスが`CONFIRMED`になる
+  - false
+    - 一時パスワードとして設定する
+    - ステータスが`FORCE_CHANGE_PASSWORD`になる
+
+### signUp(これは使わない)
 - SecretHash
   - `username`, `cliend_id`, `client_secret`をsha256でハッシュ化して、base64エンコードしたものを渡す
 - username
@@ -69,3 +115,4 @@ sequenceDiagram
 
 ## TODO
 - 認証機能作成
+- adminCreateUserで作成したユーザのログインを考える

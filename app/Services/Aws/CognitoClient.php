@@ -36,6 +36,38 @@ class CognitoClient
       var_dump($users);
     }
 
+    public function createUser($email)
+    {
+      $this->client->adminCreateUser([
+        'UserPoolId' => $this->poolId,
+        'Username' => $email,
+      ]);
+    }
+
+    public function signIn($email, $password)
+    {
+      $this->client->adminInitiateAuth([
+        'AuthFlow' => 'ADMIN_USER_PASSWORD_AUTH',
+        'AuthParameters' => [
+          'USERNAME' => $email,
+          'PASSWORD' => $password,
+          'SECRET_HASH' => $this->secretHash($email),
+        ],
+        'ClientId' => $this->clientId,
+        'UserPoolId' => $this->poolId,
+      ]);
+    }
+
+    public function changePassword($username, $password, $permanent = true)
+    {
+      $this->client->adminSetUserPassword([
+        'Password' => $password,
+        'Permanent' => $permanent,
+        'Username' => $username,
+        'UserPoolId' => $this->poolId,
+      ]);
+    }
+    
     public function signUp($email, $password) {
       try {
           $this->client->signUp([
