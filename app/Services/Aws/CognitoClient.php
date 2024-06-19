@@ -38,15 +38,16 @@ class CognitoClient
 
     public function createUser($email)
     {
-      $this->client->adminCreateUser([
+      $response = $this->client->adminCreateUser([
         'UserPoolId' => $this->poolId,
         'Username' => $email,
       ]);
+      dd($response);
     }
 
     public function signIn($email, $password)
     {
-      $this->client->adminInitiateAuth([
+      $response = $this->client->adminInitiateAuth([
         'AuthFlow' => 'ADMIN_USER_PASSWORD_AUTH',
         'AuthParameters' => [
           'USERNAME' => $email,
@@ -56,6 +57,27 @@ class CognitoClient
         'ClientId' => $this->clientId,
         'UserPoolId' => $this->poolId,
       ]);
+      // dd($response);
+      return [
+        'challengeName' => $response['ChallengeName'],
+        'session' => $response['Session'],
+      ];
+    }
+
+    public function initialPasswordChange($username, $password, $session)
+    {
+      $response = $this->client->adminRespondToAuthChallenge([
+        'ChallengeName' => 'NEW_PASSWORD_REQUIRED',
+        'ChallengeResponses' => [
+          'USERNAME' => $username,
+          'NEW_PASSWORD' => $password,
+          'SECRET_HASH' => $this->secretHash($username),
+        ],
+        'Session' => $session,
+        'ClientId' => $this->clientId,
+        'UserPoolId' => $this->poolId,
+      ]);
+      dd($response);
     }
 
     public function changePassword($username, $password, $permanent = true)

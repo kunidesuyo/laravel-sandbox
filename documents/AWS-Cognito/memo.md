@@ -40,16 +40,23 @@ npx nuxi init front
 - アプリケーションクライアント
   - `ALLOW_ADMIN_USER_PASSWORD_AUTH`を有効化する
 
-#### 設定値
+### サインアップ・サインインの一連の流れ
+色々な認証方法があるが、今回は`USER_PASSWORD_AUTH`を用いる
 
-
-### サインアップ
 ```mermaid
 sequenceDiagram
   User->>API: username
   API->>Cognito: adminCreateUser(username)
   Cognito->>User: send email with temporary password
+  User->>API: username, password(temporay)
+  API->>Cognito: adminInitiateAuth<br>(username, password(temporay))
+  Cognito->>API: NEW_PASSWORD_REQUIRED, session
+  API->>User: Please change password
+  User->>API: password(new)
+  API->>Cognito: adminRespondToAuthChallenge<br>(username, password(new), session)
+  Cognito->>API: Auth Token
 ```
+
 ### adminCreateUser
 管理者権限でユーザを作成する
 
@@ -63,7 +70,7 @@ sequenceDiagram
 
 ステータスが`FORCE_CHANGE_PASSWORD`のユーザが作成される
 
-一時パスワードがメールで送信される
+一時パスワードがメールで送信される(`パスワードの後ろのピリオドはパスワードの一部ではなく文の終わりを意味するので注意`)
 
 ### adminInitiateAuth
 ユーザ名とパスワードを使用してログインする
@@ -79,9 +86,32 @@ sequenceDiagram
       - アプリクライアントの設定でクライアントシークレットを指定した場合(?)
       - 計算方法は[こちら](https://docs.aws.amazon.com/cognito/latest/developerguide/signing-up-users-in-your-app.html#cognito-user-pools-computing-secret-hash)
 
-`adminCreateUser`で作成した、ステータスが`FORCE_CHANGE_PASSWORD`のユーザで、メールで送信された一時パスワードを用いてログインしようとしたら認証エラー
+- ステータスが`FORCE_CHANGE_PASSWORD`(一時パスワードが設定されている状態)のユーザでログインする
+  - レスポンスで以下が帰ってくる
+    - ChallengeName = `NEW_PASSWORD_REQUIRED`
+    - Session
 
-`adminSetUserPassword`でパスワードを変更したユーザ(ステータスが`FORCE_CHANGE_PASSWORD`, `CONFIRMED`どっちも)でログインしたら認証成功
+### adminRespondToAuthChallenge
+仮パスワードでログインした場合のパスワード変更を行うメソッド（他の認証チャレンジもできるっぽい）
+
+- ChallengeName
+  - 認証チャレンジを指定
+  - 今回は`NEW_PASSWORD_REQUIRED`を指定する
+- ChallengeResponses
+  - ChallengeNameで`NEW_PASSWORD_REQUIRED`を指定した場合は以下の情報が必要
+    - USERNAME
+    - PASSWORD
+    - SECRET_HASH(ユーザープールのアプリクライアントの設定でクライアントシークレットを設定した場合)
+- Session
+  - adminInitiateAuthで帰ってきた`Session`を指定する
+- ClientId
+- UserPoolId
+
+- レスポンスで以下のデータが返ってくる
+  - AccessToken
+  - RefreshToken
+  - IdToken
+- パスワードを変更したユーザーのステータスが`CONFIRMED`に変化する
 
 ### adminSetUserPassword
 管理者権限でパスワードを設定する
@@ -103,9 +133,6 @@ sequenceDiagram
   - 勝手に生成されて登録されていた
 - user_id
   - 勝手に生成されて登録されていた
-
-### ログインの仕組み
-色々な方法があるが、今回は`USER_PASSWORD_AUTH`を用いる
 
 ### ログインAPI作成
 
