@@ -20,33 +20,21 @@ composer require aws/aws-sdk-php
 sail artisan install:api
 ```
 
-## フロントエンドセットアップ
-### Nuxtをインストール
-```bash {iscopy=true}
-npx nuxi init front
-```
-
-### LaravelのAPIを呼べるか確認
-
-### ログイン画面
-
-### ログイン後の画面
-
-## Cognito
-### ユーザプール作成
+## ユーザプール作成
 - Cognito Identity Providerともいう
 - 一旦AWSマネジメントコンソールで作成
   - できればIaC化したい
 - アプリケーションクライアント
   - `ALLOW_ADMIN_USER_PASSWORD_AUTH`を有効化する
 
-### サインアップ・サインインの一連の流れ
+## サインアップの流れ
 色々な認証方法があるが、今回は`USER_PASSWORD_AUTH`を用いる
 
 ```mermaid
 sequenceDiagram
   User->>API: username
   API->>Cognito: adminCreateUser(username)
+  Note right of Cognito: Confirmation status:<br>FORCE_CHANGE_PASSWORD
   Cognito->>User: send email with temporary password
   User->>API: username, password(temporay)
   API->>Cognito: adminInitiateAuth<br>(username, password(temporay))
@@ -54,6 +42,7 @@ sequenceDiagram
   API->>User: Please change password
   User->>API: password(new)
   API->>Cognito: adminRespondToAuthChallenge<br>(username, password(new), session)
+  Note right of Cognito: Confirmation status:<br>CONFIRMED
   Cognito->>API: Auth Token
 ```
 
@@ -125,6 +114,7 @@ sequenceDiagram
     - ステータスが`FORCE_CHANGE_PASSWORD`になる
 
 ### signUp(これは使わない)
+これは管理者だけでなく一般のユーザも使えるやつ(?)
 - SecretHash
   - `username`, `cliend_id`, `client_secret`をsha256でハッシュ化して、base64エンコードしたものを渡す
 - username
@@ -134,7 +124,45 @@ sequenceDiagram
 - user_id
   - 勝手に生成されて登録されていた
 
-### ログインAPI作成
+## サインインの流れ
+Confirmation status = `FORCE_CHANGE_PASSWORD`のパターンはサインアップで説明したので割愛
+
+Confirmation status = `CONFIRMED`で行う。
+
+```mermaid
+sequenceDiagram
+  User->>API: username, password
+  API->>Cognito: adminInitiateAuth(username, password)
+  Cognito->>: 
+```
+
+### adminInitiateAuth
+ログインに用いる。
+
+Confirmation status = `CONFIRMED`でログインに成功した場合、`AccessToken`, `RefreshToken`, `IdToken`が返される。
+
+### AccessToken
+
+### RefreshToken
+
+### IdToken
+
+
+
+
+
+## フロントエンドセットアップ
+### Nuxtをインストール
+```bash {iscopy=true}
+npx nuxi init front
+```
+
+### LaravelのAPIを呼べるか確認
+
+### ログイン画面
+
+### ログイン後の画面
+
 
 ## 参考
 - [AWS BlackBelt Amazon Cognito](https://pages.awscloud.com/rs/112-TZM-766/images/20200630_AWS_BlackBelt_Amazon_Cognito_ver2.pdf)

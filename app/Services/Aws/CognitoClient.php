@@ -57,11 +57,17 @@ class CognitoClient
         'ClientId' => $this->clientId,
         'UserPoolId' => $this->poolId,
       ]);
-      // dd($response);
-      return [
-        'challengeName' => $response['ChallengeName'],
-        'session' => $response['Session'],
-      ];
+      dd($response);
+      if($response['Session']) {
+        return [
+          'challengeName' => $response['ChallengeName'],
+          'session' => $response['Session'],
+        ];
+      } else {
+        return [
+          'access'
+        ];
+      }
     }
 
     public function initialPasswordChange($username, $password, $session)
